@@ -1,0 +1,71 @@
+<!-- Start::row-1 -->
+<div class="box">
+    <div class="box-header justify-between">
+        <div class="box-title">
+            Parceiros
+        </div>
+        <div class="flex gap-4 items-center flex-wrap">
+            <div class="ti-btn-group ti-dropdown hs-dropdown p-0 border-0">
+                <a routerLink="/ks-portal/parceiro/incluir" class="ti-btn ti-btn-primary !m-0 btn-wave ti-btn-sm">
+                    <i class="ri-add-line me-1 align-middle"></i>Adicionar
+                </a>
+            </div>
+            <div class="custom-form-group grow">
+                <input type="text" class="form-control !pe-[7rem]" #inputFiltroNomeParceiro
+                    (keyup)="filtroNomeParceiro(inputFiltroNomeParceiro.value)" placeholder="Pesquisar por nome"
+                    aria-describedby="button-addon2">
+                <a aria-label="anchor" href="javascript:void(0);"
+                    class="text-textmuted dark:text-textmuted/50 custom-form-btn"><i class="ti ti-search"></i></a>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="box-body p-0">
+        <div class="table-responsive">
+            <spk-reusable-tables [columns]="ordersColumn"
+                tableClass="ti-custom-table ti-custom-table-hover text-nowrap">
+                <tr class="order-list border-b !border-defaultborder dark:!border-defaultborder/10"
+                    *ngFor="let parceiro of resultset?.registros">
+                    <td>{{parceiro.parceiro_id}}</td>
+                    <td>{{parceiro.nome}}</td>
+                    <td>
+                        {{
+                        (parceiro.logradouro + ', ' + parceiro.numero + ', ' + parceiro.complemento + ',' +
+                        parceiro.bairro + ' - CEP: ' + parceiro.cep)
+                        | slice:0:40
+                        }}<span
+                            *ngIf="(parceiro.logradouro + parceiro.numero + parceiro.complemento + parceiro.bairro + parceiro.cep).length > 40">...</span>
+                    </td>
+                    <td>{{parceiro.cnpj }}</td>
+
+                    <td>
+                        <a href="javascript:void(0);" (click)="editarParceiro(parceiro)"
+                            class="ti-btn ti-btn-icon ti-btn-sm ti-btn-soft-info btn-wave waves-effect waves-light">
+                            <i class="ri-edit-line"> </i>
+                        </a>
+                        <a aria-label="anchor" href="javascript:void(0);"
+                            class="order-delete-btn ti-btn ti-btn-sm ti-btn-soft-primary2 btn-wave waves-effect waves-light !mb-0">
+                            <i class="ri-delete-bin-line"></i>
+                        </a>
+                        <a href="javascript:void(0);" (click)="visualizarParceiro(parceiro)"
+                            class="ti-btn ti-btn-icon ti-btn-sm ti-btn-soft-success btn-wave waves-effect waves-light">
+                            <i class="ri-eye-line"></i>
+                        </a>
+                    </td>
+                </tr>
+            </spk-reusable-tables>
+        </div>
+        <div class="box-footer">
+            <div class="flex items-center flex-wrap overflow-auto">
+
+                <div class="ms-auto my-2">
+                    <div class="flex items-center flex-wrap overflow-auto">
+                        <app-paginador [length]="getTotalRegistro()" [pageIndex]="pagina"
+                            (page)="onPageChange($event)"></app-paginador>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!--End::row-1 -->

@@ -1,0 +1,12 @@
+<ng-select
+  [items]="unidades"
+ 
+  [typeahead]="searchUnidades$"
+  [multiple]="true"
+  bindLabel="nome"
+  bindValue="id"
+  [ngModelOptions]="{ standalone: true }"
+  [(ngModel)]="selectedUnidade"
+  (ngModelChange)="onChange($event)"
+  [placeholder]="placeholder">
+</ng-select>

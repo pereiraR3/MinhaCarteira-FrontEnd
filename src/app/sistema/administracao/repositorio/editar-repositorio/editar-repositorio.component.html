@@ -1,0 +1,66 @@
+<div class="nk-block">
+    <div class="card">
+      <div class="card h-100">
+        <div class="card-inner">
+            <div class="card-head">
+                <h5 class="card-title">Alterar dados Repositorio</h5>
+            </div>
+            <form name="repositorioForm" [formGroup]="repositorioForm" novalidate (ngSubmit)="salvar()">
+                <div class="form-group">
+                    <label class="form-label">Nome</label>
+                    <input id="inputNome" type="text" class="form-control"  autocomplete="off" formControlName="nome">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Titulo</label>
+                    <input id="iptTitulo" type="text" class="form-control" autocomplete="off" formControlName="titulo">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-control" id="default-06" formControlName="tipo" >
+                        <option value=""></option>
+                        <option value="SISTEMA_ARQUIVO">Local</option>
+                        <option value="AWS_S3">Amazon S3</option>
+                        <option value="GOOGLE_STORAGE">Google Storate</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div class="nk-block">
+                        <div class="nk-data data-list">
+                            <div class="data-head">
+                                <h6 class="overline-title">Dados do Repositório</h6>
+                            </div>
+
+                            <div class="row g-3 align-center" *ngFor="let registroForm of this.repositorio.dadosFormulario; let i = index">
+                                <div class="col-lg-5">
+                                    <div class="form-group">
+                                        <label class="form-label" for="site-name">{{registroForm.nome}}</label>
+                                        <span class="form-note">{{registroForm.descricao}}</span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-7">
+                                    <div class="form-group">
+                                        <div class="form-control-wrap">
+                                            <input #incluirValorForm id="inputValor{{i}}" type="text" class="form-control"  [value]="registroForm.valor" (input)="registroForm.valor = incluirValorForm.value">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                                                   
+                        </div><!-- data-list -->
+                    
+                    </div>
+                </div>
+
+
+              
+            
+              <div class="form-group">
+                    <button type="submit" class="btn btn-lg btn-primary"   >Salvar</button>
+                    <button type="button" class="btn btn-lg" (click)="voltar()" ><i class="fe-x me-1"></i> voltar</button>
+               </div>
+            </form>
+        </div>
+    </div>
+    </div>
+  </div>
+  

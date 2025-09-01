@@ -1,0 +1,32 @@
+<app-switcher></app-switcher>
+
+<div class="page">
+    <app-header></app-header>
+    <app-sidebar appHoverEffectSidebar></app-sidebar>
+<div class="main-content app-content">
+    <div class="container-fluid" (click)="clickOnBody()">
+        <!-- <app-page-header></app-page-header> -->
+        <router-outlet></router-outlet>
+        </div>
+</div>
+<app-footer></app-footer>
+<app-tab-to-top></app-tab-to-top>
+
+</div>
+<div id="responsive-overlay" (click)="clearToggle()"></div>
+
+<!---->
+<div class="overlay" *ngIf="isLoading| async" >
+    <div class="spinner-wrapper">
+      <svg class="spinner" width="80" height="80" viewBox="0 0 50 50">
+        <circle
+          class="path"
+          cx="25"
+          cy="25"
+          r="20"
+          fill="none"
+          stroke-width="4"
+        />
+      </svg>
+    </div>
+  </div>

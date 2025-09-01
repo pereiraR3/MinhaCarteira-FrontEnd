@@ -1,0 +1,10 @@
+<ng-select
+  [items]="contas"
+  [typeahead]="searchContas$"
+  bindLabel="nome"
+  bindValue="id"
+  [ngModelOptions]="{ standalone: true }"
+  [(ngModel)]="selectedConta"
+  (ngModelChange)="onChange($event)"
+  [placeholder]="placeholder">
+</ng-select>

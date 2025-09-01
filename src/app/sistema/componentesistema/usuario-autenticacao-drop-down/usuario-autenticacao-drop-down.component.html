@@ -1,0 +1,40 @@
+<li class="header-element ti-dropdown hs-dropdown">
+    <!-- Start::header-link|dropdown-toggle -->
+    <a aria-label="anchor"  href="javascript:void(0);" class="header-link hs-dropdown-toggle ti-dropdown-toggle"
+        id="mainHeaderProfile" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+        <div class="flex items-center">
+            <div>
+                <img src="./assets/images/faces/15.jpg" alt="img" class="avatar avatar-sm mb-0">
+            </div>
+        </div>
+        <div class="user-info d-none d-xl-block">
+            
+            <div class="user-name">{{usuario.nome}}</div>
+            <div class="user-name dropdown-indicator"> {{usuario.parceiro.nome}}</div>     
+        </div>
+     
+
+        
+      
+    </a>
+    <!-- End::header-link|dropdown-toggle -->
+    <ul class="main-header-dropdown hs-dropdown-menu ti-dropdown-menu pt-0 overflow-hidden header-profile-dropdown hidden"
+        aria-labelledby="mainHeaderProfile">
+        <li>
+            <div
+                class="ti-dropdown-item text-center border-b border-defaultborder dark:border-defaultborder/10 block">
+                <span>
+                    {{usuario.nome}}
+                </span>
+               
+             
+                
+            </div>
+        </li>
+      
+        <li><a class="ti-dropdown-item flex items-center" (click)="sairSistema()"><i class="fe fe-lock p-1 rounded-full bg-primary/10 text-primary ut me-2 text-[1rem]"></i>Sair</a></li>
+    </ul>
+</li>
+
+
+

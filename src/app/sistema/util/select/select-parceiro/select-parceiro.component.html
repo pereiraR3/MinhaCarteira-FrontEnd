@@ -1,0 +1,10 @@
+<ng-select
+  [items]="parceiros"
+  [typeahead]="searchParceiros$"
+  bindLabel="nome"
+  bindValue="parceiro_id"
+  [ngModelOptions]="{ standalone: true }"
+  [(ngModel)]="selectedParceiro"
+  (ngModelChange)="onChange($event)"
+  [placeholder]="placeholder">
+</ng-select>

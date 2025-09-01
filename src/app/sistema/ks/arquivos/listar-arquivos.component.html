@@ -1,0 +1,24 @@
+  <div class="box overflow-hidden">
+            <div class="box-header justify-between">
+                <div class="box-title">
+                    Fatura anexos
+                </div>
+           
+            </div>
+            <div class="box-body p-0">
+                <ul class="ti-list-group list-group-flush !rounded-none" *ngFor="let oportunidadeArquivo of resultset?.registros">
+                    <li class="ti-list-group-item">
+                        <div class="flex items-center flex-wrap gap-2">
+                      
+                            <div class="flex-auto">
+                                <a href="javascript:void(0);"><span class="block font-medium">{{oportunidadeArquivo.arquivo.nome}}</span></a>
+                                <span class="block text-textmuted dark:text-textmuted/50 text-xs font-normal">1.8MB</span>
+                            </div>
+                            <div class="ms-auto">
+                                <button class="ti-btn ti-btn-sm ti-btn-icon ti-btn-soft-primary btn-wave" (click)="visualizarFatura(oportunidadeArquivo)"><i class="ri-eye-line"></i></button>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
