@@ -8,7 +8,18 @@ import { Gasto } from '../../../core/models';
   imports: [CommonModule],
   template: `
   <div class="flex-1 overflow-y-auto">
-    <h2 class="text-xl font-bold text-gray-800 mb-4">Histórico de Gastos</h2>
+    <!-- INÍCIO DA ALTERAÇÃO: Header com Título e Botão de Relatório -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Histórico de Gastos</h2>
+      <button (click)="onGenerateReport()" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Gerar Relatório
+      </button>
+    </div>
+    <!-- FIM DA ALTERAÇÃO -->
+
     @if(gastos.length > 0){
       <ul class="space-y-3">
         @for(gasto of gastos; track gasto.id) {
@@ -73,6 +84,7 @@ export class GastoListComponent {
   @Output() loadMore = new EventEmitter<void>();
   @Output() delete = new EventEmitter<number>();
   @Output() update = new EventEmitter<Gasto>();
+  @Output() generateReport = new EventEmitter<void>(); // Novo Output para o relatório
 
   onDelete(id: number): void {
     this.delete.emit(id);
@@ -80,5 +92,11 @@ export class GastoListComponent {
 
   onUpdate(gasto: Gasto): void {
     this.update.emit(gasto);
+  }
+
+  // Novo método para emitir o evento
+  onGenerateReport(): void {
+    console.log(`Solicitando envio de relatório para `);
+    this.generateReport.emit();
   }
 }

@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { LoginComponent } from './features/login/login.component';
 import { GastoComponent } from './features/gasto/gasto.component';
+import { DashboardComponent } from "./shared/ui/dashboard.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, LoginComponent, GastoComponent],
+  imports: [CommonModule, LoginComponent, DashboardComponent],
   template: `
     <div class="bg-gray-100 min-h-screen flex items-center justify-center font-sans">
       <main
@@ -17,7 +18,7 @@ import { GastoComponent } from './features/gasto/gasto.component';
           'max-w-lg': !authService.isAuthenticated()
         }">
         @if (authService.isAuthenticated()) {
-          <app-gasto class="w-full" />
+          <app-dashboard class="w-full" />
         } @else {
           <app-login class="w-full" />
         }
