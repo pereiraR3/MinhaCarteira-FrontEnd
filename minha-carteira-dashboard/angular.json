@@ -61,7 +61,8 @@
               "buildTarget": "minha-carteira-dashboard:build:production"
             },
             "development": {
-              "buildTarget": "minha-carteira-dashboard:build:development"
+              "buildTarget": "minha-carteira-dashboard:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
