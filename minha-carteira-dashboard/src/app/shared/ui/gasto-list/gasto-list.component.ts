@@ -13,6 +13,7 @@ import { ReportService } from '../../../core/services/report.service';
     <!-- INÍCIO DA ALTERAÇÃO: Header com Título e Botão de Relatório -->
   <div class="flex justify-between items-center mb-4">
   <h2 class="text-xl font-bold text-gray-800">Histórico de Gastos</h2>
+
   <div class="flex flex-col md:flex-row md:justify-end items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
   <button (click)="onGenerateReport()" class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md w-full md:w-auto">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="#ffffffff">
@@ -91,6 +92,10 @@ export class GastoListComponent {
   @Input({ required: true }) gastos: Gasto[] = [];
   @Input({ required: true }) isLoading = false;
   @Input({ required: true }) canLoadMore = false;
+
+  @Input() activeFilter: string = 'este_mes'; // 2. Input para saber qual filtro está ativo
+  @Output() filterChange = new EventEmitter<{ mes?: number, ano?: number }>();
+
  authService = inject(AuthService);
     reportService = inject(ReportService);
   @Output() loadMore = new EventEmitter<void>();
@@ -100,7 +105,22 @@ export class GastoListComponent {
    onDelete(gasto: Gasto): void { // Recebe o objeto Gasto
     this.delete.emit(gasto);
   }
+  onFilterChange(type: 'este_mes' | 'mes_passado'): void {
+    const today = new Date();
+    let mes, ano;
 
+    if (type === 'este_mes') {
+      mes = today.getMonth() + 1; // getMonth() é 0-11
+      ano = today.getFullYear();
+    } else if (type === 'mes_passado') {
+      const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      mes = oneMonthAgo.getMonth() + 1;
+      ano = oneMonthAgo.getFullYear();
+    }
+    
+    // Emite o objeto com os filtros
+    this.filterChange.emit({ mes, ano });
+  }
   onUpdate(gasto: Gasto): void {
     this.update.emit(gasto);
   }

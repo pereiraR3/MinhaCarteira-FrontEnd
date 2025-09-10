@@ -43,9 +43,8 @@ export class LoginComponent {
     const userId = this.authService.userId();
 
     if (userId) {
-      this.gastoService.loadGastos(userId, 1);
-      this.router.navigate(['/dashboard']); 
-      
+      this.gastoService.loadGastosFilter(userId, 1,{});
+     
     }
   }
 }

@@ -2,10 +2,11 @@ import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core
 import { HttpClient, HttpHeaders ,HttpParams} from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { User } from '../models';
-
+import { Router } from '@angular/router'; 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
+  router = inject(Router); 
   private platformId = inject(PLATFORM_ID);
 
   authToken = signal<string | null>(null);
@@ -36,6 +37,8 @@ export class AuthService {
         this.authToken.set(token);
         const decoded = this.jwtDecode(token);
         if (decoded?.sub) {
+          console.log('Navegando para /dashboard após login bem-sucedido');
+          this.router.navigate(['/dashboard']);
           this.fetchUserDetails(decoded.sub);
         } else {
           this.apiError.set('Token JWT inválido.');

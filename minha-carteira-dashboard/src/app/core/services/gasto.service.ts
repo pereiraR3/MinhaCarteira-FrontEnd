@@ -1,11 +1,15 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { tap, catchError, of, Observable, throwError } from 'rxjs';
 import { Gasto } from '../models';
 import { Page } from '../models';
 import { AuthService } from './auth.service';
 import { GastoPayload } from '../../shared/ui/gasto-form/gasto-form.component';
-
+export interface FilterCriteria {
+  nome?: string;
+  dataInicio?: string;
+  dataFim?: string;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -31,7 +35,7 @@ constructor() {
 
       if (userId && userId !== this.initialLoadDoneForUser) {
         console.log(`Usuário com ID: ${userId} mudou. Carregando gastos...`);
-        this.loadGastos(userId, 0);
+        this.loadGastosFilter(userId, 0, {});
         this.initialLoadDoneForUser = userId;
       } else if (!userId && this.initialLoadDoneForUser !== null) {
         console.log('Nenhum usuário. Limpando estado de gastos.');
@@ -41,21 +45,83 @@ constructor() {
     });
   }
 
-  loadGastos(usuarioId: number, page: number): void {
+    private filterState = signal<FilterCriteria>({});
+
+applyFilters(newFilters: FilterCriteria): void {
+    this.filterState.set(newFilters); // Atualiza o estado do filtro
+    this.loadGastos(0); // Recarrega os dados da primeira página com os novos filtros
+  }
+   private loadGastos(page: number): void {
+    const userId = this.authService.userId();
+    if (!userId || this.isLoading()) return;
+
+    this.isLoading.set(true);
+    this.apiError.set(null);
+    const size = 10;
+    const currentFilters = this.filterState(); // Pega os filtros atuais do signal
+
+    // Usa HttpParams para construir a query string de forma segura
+    let params = new HttpParams()
+      .set('usuarioId', userId.toString())
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (currentFilters.nome) {
+      params = params.append('nome', currentFilters.nome);
+    }
+    if (currentFilters.dataInicio) {
+      params = params.append('dataInicio', currentFilters.dataInicio);
+    }
+    if (currentFilters.dataFim) {
+      params = params.append('dataFim', currentFilters.dataFim);
+    }
+
+    this.http.get<Page<Gasto>>('/api/gasto/find-by-filter', { params })
+      .pipe(
+        tap(response => {
+          if (!response) return;
+          if (page === 0) {
+            this.gastos.set(response.content);
+          } else {
+            this.gastos.update(existing => [...existing, ...response.content]);
+          }
+          this.currentPage.set(page);
+          this.totalPages.set(response.totalPages);
+          this.isLoading.set(false);
+        }),
+        catchError(error => {
+          // ... seu tratamento de erro
+          return of(null);
+        })
+      ).subscribe();
+  }
+ loadGastosFilter(usuarioId: number, page: number, filters?: { mes?: number, ano?: number }): void {
     if (this.isLoading()) return;
 
     this.isLoading.set(true);
     this.apiError.set(null);
     const size = 10;
 
-    this.http.get<Page<Gasto>>(`/api/gasto/find-by-filter?usuarioId=${usuarioId}&page=${page}&size=${size}`)
+  
+    let url = `/api/gasto/find-by-filter?usuarioId=${usuarioId}&page=${page}&size=${size}`;
+    if (filters?.mes) {
+      url += `&mes=${filters.mes}`;
+    }
+    if (filters?.ano) {
+      url += `&ano=${filters.ano}`;
+    }
+    // --- FIM DA LÓGICA DE FILTRO ---
+
+    this.http.get<Page<Gasto>>(url) // Use a nova URL
       .pipe(
         tap(response => {
-          if(!response) return;
+          if (!response) return;
 
+          // Se for uma nova busca (página 0), substitua a lista
           if (page === 0) {
             this.gastos.set(response.content);
           } else {
+            // Se for "carregar mais", adicione ao final
             this.gastos.update(existing => [...existing, ...response.content]);
           }
           this.currentPage.set(page);
@@ -76,7 +142,7 @@ constructor() {
     if (nextPage < this.totalPages()) {
       const user = this.authService.currentUser();
       if (user) {
-        this.loadGastos(user.id, nextPage);
+        this.loadGastosFilter(user.id, nextPage, {}); // Mantém os filtros atuais
       }
     }
   }
@@ -116,7 +182,7 @@ constructor() {
         .subscribe({
           next: () => {
             this.gastos.update(existing => existing.filter(gasto => gasto.id !== id));
-            this.loadGastos(user.id, 0);
+            this.loadGastosFilter(user.id, 0, {});
           },
           error: (error) => {
             console.error('Erro ao deletar gasto:', error);
@@ -133,7 +199,7 @@ constructor() {
         .subscribe({
           next: (gasto) => {
             this.gastos.update(existing => existing.map(g => g.id === gasto.id ? gasto : g));
-            this.loadGastos(user.id, 0);
+            this.loadGastosFilter(user.id, 0, {});
           },
           error: (error) => {
             console.error('Erro ao atualizar gasto:', error);
