@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Gasto } from '../../../core/models';
+import { AuthService } from '../../../core/services/auth.service';
+import { ReportService } from '../../../core/services/report.service';
 
 @Component({
   selector: 'app-gasto-list',
@@ -9,15 +11,24 @@ import { Gasto } from '../../../core/models';
   template: `
   <div class="flex-1 overflow-y-auto">
     <!-- INÍCIO DA ALTERAÇÃO: Header com Título e Botão de Relatório -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold text-gray-800">Histórico de Gastos</h2>
-      <button (click)="onGenerateReport()" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-        </svg>
-        Gerar Relatório
-      </button>
-    </div>
+  <div class="flex justify-between items-center mb-4">
+  <h2 class="text-xl font-bold text-gray-800">Histórico de Gastos</h2>
+  <div class="flex flex-col md:flex-row md:justify-end items-center mb-4 space-y-4 md:space-y-0 md:space-x-4">
+  <button (click)="onGenerateReport()" class="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md w-full md:w-auto">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="#ffffffff">
+      <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 9V6.5L16.5 10H14v6h-4V4h4c.55 0 1 .45 1 1v6zm-2 2v-3.5L7.5 7H10v6z"/>
+      <path d="M12 18l-4-4h3V9h2v5h3l-4 4z"/>
+    </svg>
+    Enviar relatório
+  </button>
+  <button (click)="Down()" class="flex items-center justify-center bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md w-full md:w-auto">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-3.72 0-6.75 2.76-7.25 6.32C2.59 10.71 1 12.31 1 14.25c0 2.14 1.83 3.91 3.97 3.91H18c2.21 0 4-1.79 4-4 0-2.06-1.53-3.79-3.65-3.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
+    </svg>
+    Download
+  </button>
+</div>
+</div>
     <!-- FIM DA ALTERAÇÃO -->
 
     @if(gastos.length > 0){
@@ -48,7 +59,7 @@ import { Gasto } from '../../../core/models';
                 </svg>
               </button>
 
-              <button (click)="onDelete(gasto.id)" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors duration-200">
+              <button (click)="onDelete(gasto)" class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-100 rounded-full transition-colors duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
@@ -80,14 +91,14 @@ export class GastoListComponent {
   @Input({ required: true }) gastos: Gasto[] = [];
   @Input({ required: true }) isLoading = false;
   @Input({ required: true }) canLoadMore = false;
-
+ authService = inject(AuthService);
+    reportService = inject(ReportService);
   @Output() loadMore = new EventEmitter<void>();
-  @Output() delete = new EventEmitter<number>();
-  @Output() update = new EventEmitter<Gasto>();
+  @Output() delete = new EventEmitter<Gasto>(); // Alterado para emitir o objeto Gasto  @Output() update = new EventEmitter<Gasto>();
   @Output() generateReport = new EventEmitter<void>(); // Novo Output para o relatório
-
-  onDelete(id: number): void {
-    this.delete.emit(id);
+  @Output() update = new EventEmitter<Gasto>();
+   onDelete(gasto: Gasto): void { // Recebe o objeto Gasto
+    this.delete.emit(gasto);
   }
 
   onUpdate(gasto: Gasto): void {
@@ -99,4 +110,13 @@ export class GastoListComponent {
     console.log(`Solicitando envio de relatório para `);
     this.generateReport.emit();
   }
+
+   Down(){
+         const currentDate = new Date();
+        const mes = currentDate.getMonth() + 1;
+        const ano = currentDate.getFullYear();
+        const usuarioId = this.authService.currentUser()?.id;
+
+      this.reportService.downloadMonthlyReport({ mes, ano, usuarioId })
+    }
 }

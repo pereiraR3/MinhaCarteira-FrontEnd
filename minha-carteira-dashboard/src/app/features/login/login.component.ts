@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { GastoService } from '../../core/services/gasto.service';
+import { Router } from '@angular/router'; // 1. Importe o Router
 
 @Component({
   selector: 'app-login',
@@ -30,6 +31,7 @@ import { GastoService } from '../../core/services/gasto.service';
 export class LoginComponent {
   authService = inject(AuthService);
   gastoService = inject(GastoService);
+  router = inject(Router); // 2. Injete o Router
 
   onLogin(event: Event) {
     event.preventDefault();
@@ -42,6 +44,8 @@ export class LoginComponent {
 
     if (userId) {
       this.gastoService.loadGastos(userId, 1);
+      this.router.navigate(['/dashboard']); 
+      
     }
   }
 }

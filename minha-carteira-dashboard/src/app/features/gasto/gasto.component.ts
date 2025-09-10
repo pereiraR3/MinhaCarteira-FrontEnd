@@ -5,6 +5,7 @@ import { GastoListComponent } from '../../shared/ui/gasto-list/gasto-list.compon
 import { AuthService } from '../../core/services/auth.service';
 import { GastoService } from '../../core/services/gasto.service';
 import { CategoriaService } from '../../core/services/categoria.service';
+import { Gasto } from '../../core/models';
 
 @Component({
   selector: 'app-gasto',
@@ -24,7 +25,7 @@ import { CategoriaService } from '../../core/services/categoria.service';
 
       <app-gasto-form
         [categorias]="categoriaService.categorias()"
-        (add)="onAddGasto($event)">
+        (save)="onAddGasto($event)">
       </app-gasto-form>
 
       @if(gastoService.apiError()){
@@ -63,9 +64,13 @@ export class GastoComponent {
     this.gastoService.addGasto(formPayload);
   }
 
-  onDeleteGasto(id: number): void {
-    this.gastoService.deleteGasto(id);
+onDeleteGasto(gasto: Gasto): void {
+  // Agora você recebe o objeto completo e usa o id dele
+  // Pode adicionar uma confirmação aqui se desejar
+  if (confirm(`Tem certeza que deseja deletar o gasto "${gasto }"?`)) {
+    this.gastoService.deleteGasto(gasto.id);
   }
+}
 
   onUpdateGasto(gasto: GastoPayload): void {
     console.log('Atualizar o gasto:', gasto);
