@@ -44,18 +44,21 @@ import { GastoFilterComponent } from "../../features/gasto/gasto-filter.componen
               (save)="onAddGasto($event)"
             ></app-gasto-form>
 
-    <app-gasto-filter (filterChange)="onApplyFilters($event)"></app-gasto-filter>
+      <app-gasto-filter (filterChange)="onApplyFilters($event)"></app-gasto-filter>
 
-            <app-gasto-list
-              [gastos]="gastoService.gastos()"
-              [isLoading]="gastoService.isLoading()"
-              [canLoadMore]="gastoService.currentPage() < gastoService.totalPages() - 1"
-              (loadMore)="onLoadMore()"
-              (delete)="openDeleteModal($event)"
-              (update)="openEditModal($event)"
-              (generateReport)="onGenerateReport()"
-             
-            ></app-gasto-list>
+        <app-gasto-list
+        [gastos]="gastoService.gastos()"
+        [isLoading]="gastoService.isLoading()"
+        
+        [currentPage]="gastoService.currentPage()"
+        [totalPages]="gastoService.totalPages()"
+
+        (pageChange)="onPageChange($event)"
+
+        (delete)="openDeleteModal($event)"
+        (update)="openEditModal($event)"
+        (generateReport)="onGenerateReport()"
+      ></app-gasto-list>
 
         </div>
     </main>
@@ -93,7 +96,7 @@ export class DashboardComponent {
   reportService = inject(ReportService);
   categoriaService = inject(CategoriaService);
   activeFilter = signal<'este_mes' | 'mes_passado'>('este_mes');
-
+  currentPage = signal(0);
   // Signals para controlar o estado dos modais
   gastoToEdit = signal<Gasto | null>(null);
   gastoToDelete = signal<Gasto | null>(null);
@@ -102,11 +105,17 @@ export class DashboardComponent {
   openEditModal(gasto: Gasto): void {
     this.gastoToEdit.set(gasto);
   }
-onApplyFilters(filters: FilterCriteria): void {
+
+  onApplyFilters(filters: FilterCriteria): void {
     this.gastoService.applyFilters(filters);
   }
+
   openDeleteModal(gasto: Gasto): void {
     this.gastoToDelete.set(gasto);
+  }
+
+  onPageChange(newPage: number): void {
+    this.gastoService.changePage(newPage);
   }
 
   closeModals(): void {
@@ -131,7 +140,7 @@ onApplyFilters(filters: FilterCriteria): void {
       }
 
       // Chama o serviço com os filtros, reiniciando a paginação (página 0)
-      this.gastoService.loadGastosFilter(userId, 0, filters);
+      this.gastoService.loadMoreGastos();
     }
   }
   onDeleteGasto(id: number): void {

@@ -35,7 +35,9 @@ import { Gasto } from '../../core/models';
       <app-gasto-list
         [gastos]="gastoService.gastos()"
         [isLoading]="gastoService.isLoading()"
-        [canLoadMore]="canLoadMore()"
+        [currentPage]="gastoService.currentPage()"
+        [totalPages]="gastoService.totalPages()"
+       
         (loadMore)="gastoService.loadMoreGastos()"
         (delete)="onDeleteGasto($event)"
         (update)="onUpdateGasto($event)">

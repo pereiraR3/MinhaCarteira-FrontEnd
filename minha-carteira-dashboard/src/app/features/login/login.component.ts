@@ -43,7 +43,7 @@ export class LoginComponent {
     const userId = this.authService.userId();
 
     if (userId) {
-      this.gastoService.loadGastosFilter(userId, 1,{});
+      this.gastoService.loadMoreGastos();
      
     }
   }

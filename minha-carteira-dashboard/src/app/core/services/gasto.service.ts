@@ -18,7 +18,7 @@ export class GastoService {
   private authService = inject(AuthService);
 
   gastos = signal<Gasto[]>([]);
-  changePage = signal(1);
+  //changePage = signal(1);
   currentPage = signal(0);
   totalPages = signal(0);
   totalGastos = signal(0);
@@ -29,13 +29,13 @@ export class GastoService {
   private initialLoadDoneForUser: number | null = null;
 
 
-constructor() {
+  constructor() {
     effect(() => {
       const userId = this.authService.userId();
 
       if (userId && userId !== this.initialLoadDoneForUser) {
         console.log(`Usuário com ID: ${userId} mudou. Carregando gastos...`);
-        this.loadGastosFilter(userId, 0, {});
+        this.loadGastos(this.currentPage());
         this.initialLoadDoneForUser = userId;
       } else if (!userId && this.initialLoadDoneForUser !== null) {
         console.log('Nenhum usuário. Limpando estado de gastos.');
@@ -45,92 +45,53 @@ constructor() {
     });
   }
 
-    private filterState = signal<FilterCriteria>({});
+  private filterState = signal<FilterCriteria>({});
 
-applyFilters(newFilters: FilterCriteria): void {
+  applyFilters(newFilters: FilterCriteria): void {
     this.filterState.set(newFilters); // Atualiza o estado do filtro
-    this.loadGastos(0); // Recarrega os dados da primeira página com os novos filtros
+    this.loadGastos(0);// Recarrega os dados da primeira página com os novos filtros
   }
-   private loadGastos(page: number): void {
+
+  changePage(page: number): void {
+    if (page >= 0 && page < this.totalPages()) {
+      this.loadGastos(page);
+    }
+  }
+
+  // ÚNICA FUNÇÃO DE CARREGAMENTO - agora privada
+  private loadGastos(page: number): void {
     const userId = this.authService.userId();
     if (!userId || this.isLoading()) return;
 
     this.isLoading.set(true);
     this.apiError.set(null);
     const size = 10;
-    const currentFilters = this.filterState(); // Pega os filtros atuais do signal
+    const currentFilters = this.filterState();
 
-    // Usa HttpParams para construir a query string de forma segura
     let params = new HttpParams()
       .set('usuarioId', userId.toString())
       .set('page', page.toString())
       .set('size', size.toString());
 
-    if (currentFilters.nome) {
-      params = params.append('nome', currentFilters.nome);
-    }
-    if (currentFilters.dataInicio) {
-      params = params.append('dataInicio', currentFilters.dataInicio);
-    }
-    if (currentFilters.dataFim) {
-      params = params.append('dataFim', currentFilters.dataFim);
-    }
+    if (currentFilters.nome) params = params.append('nome', currentFilters.nome);
+    if (currentFilters.dataInicio) params = params.append('dataInicio', currentFilters.dataInicio);
+    if (currentFilters.dataFim) params = params.append('dataFim', currentFilters.dataFim);
 
     this.http.get<Page<Gasto>>('/api/gasto/find-by-filter', { params })
       .pipe(
         tap(response => {
           if (!response) return;
-          if (page === 0) {
-            this.gastos.set(response.content);
-          } else {
-            this.gastos.update(existing => [...existing, ...response.content]);
-          }
+
+          // CORRIGIDO: Sempre substitui a lista, não importa a página.
+          // Isso é o correto para paginação, diferente do "carregar mais".
+          this.gastos.set(response.content);
+
           this.currentPage.set(page);
           this.totalPages.set(response.totalPages);
           this.isLoading.set(false);
         }),
         catchError(error => {
-          // ... seu tratamento de erro
-          return of(null);
-        })
-      ).subscribe();
-  }
- loadGastosFilter(usuarioId: number, page: number, filters?: { mes?: number, ano?: number }): void {
-    if (this.isLoading()) return;
-
-    this.isLoading.set(true);
-    this.apiError.set(null);
-    const size = 10;
-
-  
-    let url = `/api/gasto/find-by-filter?usuarioId=${usuarioId}&page=${page}&size=${size}`;
-    if (filters?.mes) {
-      url += `&mes=${filters.mes}`;
-    }
-    if (filters?.ano) {
-      url += `&ano=${filters.ano}`;
-    }
-    // --- FIM DA LÓGICA DE FILTRO ---
-
-    this.http.get<Page<Gasto>>(url) // Use a nova URL
-      .pipe(
-        tap(response => {
-          if (!response) return;
-
-          // Se for uma nova busca (página 0), substitua a lista
-          if (page === 0) {
-            this.gastos.set(response.content);
-          } else {
-            // Se for "carregar mais", adicione ao final
-            this.gastos.update(existing => [...existing, ...response.content]);
-          }
-          this.currentPage.set(page);
-          this.totalPages.set(response.totalPages);
-          this.isLoading.set(false);
-        }),
-        catchError(error => {
-          console.error('API Error:', error);
-          this.apiError.set('Falha ao carregar os gastos. Tente novamente.');
+          this.apiError.set('Falha ao carregar os gastos.');
           this.isLoading.set(false);
           return of(null);
         })
@@ -142,7 +103,7 @@ applyFilters(newFilters: FilterCriteria): void {
     if (nextPage < this.totalPages()) {
       const user = this.authService.currentUser();
       if (user) {
-        this.loadGastosFilter(user.id, nextPage, {}); // Mantém os filtros atuais
+        this.loadGastos(this.currentPage()); // Mantém os filtros atuais
       }
     }
   }
@@ -177,12 +138,12 @@ applyFilters(newFilters: FilterCriteria): void {
 
   deleteGasto(id: number): void {
     const user = this.authService.currentUser();
-    if(user) {
+    if (user) {
       this.http.delete(`/api/gasto/${id}`)
         .subscribe({
           next: () => {
             this.gastos.update(existing => existing.filter(gasto => gasto.id !== id));
-            this.loadGastosFilter(user.id, 0, {});
+            this.loadGastos(this.currentPage());
           },
           error: (error) => {
             console.error('Erro ao deletar gasto:', error);
@@ -194,12 +155,12 @@ applyFilters(newFilters: FilterCriteria): void {
 
   updateGasto(gasto: Gasto): void {
     const user = this.authService.currentUser();
-    if(user) {
+    if (user) {
       this.http.put<Gasto>(`/api/gasto/${gasto.id}`, { ...gasto, usuarioId: user.id })
         .subscribe({
           next: (gasto) => {
             this.gastos.update(existing => existing.map(g => g.id === gasto.id ? gasto : g));
-            this.loadGastosFilter(user.id, 0, {});
+            this.loadGastos(this.currentPage());
           },
           error: (error) => {
             console.error('Erro ao atualizar gasto:', error);
@@ -213,10 +174,10 @@ applyFilters(newFilters: FilterCriteria): void {
     // Associa o ID do usuário logado ao novo gasto
     const userId = this.authService.userId();
     if (!userId) {
-        const errorMsg = 'Usuário não autenticado.';
-        this.apiError.set(errorMsg);
-        this.isLoading.set(false);
-        return throwError(() => new Error(errorMsg));
+      const errorMsg = 'Usuário não autenticado.';
+      this.apiError.set(errorMsg);
+      this.isLoading.set(false);
+      return throwError(() => new Error(errorMsg));
     }
     const gastoCompleto = { ...gastoPayload, usuarioId: userId };
 
@@ -229,7 +190,7 @@ applyFilters(newFilters: FilterCriteria): void {
     );
   }
 
-   fetchGastos(page: number): void {
+  fetchGastos(page: number): void {
     if (this.isLoading()) return;
     this.isLoading.set(true);
     this.apiError.set(null);
@@ -258,7 +219,7 @@ applyFilters(newFilters: FilterCriteria): void {
     this.isLoading.set(false);
     this.apiError.set(null);
   }
-    private handleError(error: HttpErrorResponse, defaultMessage: string): Observable<never> {
+  private handleError(error: HttpErrorResponse, defaultMessage: string): Observable<never> {
     console.error(defaultMessage, error);
     this.apiError.set(defaultMessage);
     this.isLoading.set(false);

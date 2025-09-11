@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Gasto } from '../../../core/models';
 import { AuthService } from '../../../core/services/auth.service';
 import { ReportService } from '../../../core/services/report.service';
+import { PaginationComponent } from '../../ui/paginador/pagination.component'; // Importe o novo componente
 
 @Component({
   selector: 'app-gasto-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PaginationComponent],
   template: `
   <div class="flex-1 overflow-y-auto">
     <!-- INÍCIO DA ALTERAÇÃO: Header com Título e Botão de Relatório -->
@@ -79,10 +80,12 @@ import { ReportService } from '../../../core/services/report.service';
     @if(isLoading) {
       <p class="text-gray-500 animate-pulse">Carregando...</p>
     }
-    @if(!isLoading && canLoadMore) {
-      <button (click)="loadMore.emit()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg">
-        Carregar Mais
-      </button>
+    @if(!isLoading ) {
+      <app-pagination
+      [currentPage]="currentPage"
+      [totalPages]="totalPages"
+      (pageChange)="pageChange.emit($event)">
+    </app-pagination>
     }
   </div>
   `,
@@ -91,18 +94,21 @@ import { ReportService } from '../../../core/services/report.service';
 export class GastoListComponent {
   @Input({ required: true }) gastos: Gasto[] = [];
   @Input({ required: true }) isLoading = false;
-  @Input({ required: true }) canLoadMore = false;
-
+  //@Input({ required: true }) canLoadMore = false;
+  @Input({ required: true }) currentPage!: number;
+  @Input({ required: true }) totalPages!: number;
   @Input() activeFilter: string = 'este_mes'; // 2. Input para saber qual filtro está ativo
   @Output() filterChange = new EventEmitter<{ mes?: number, ano?: number }>();
 
- authService = inject(AuthService);
-    reportService = inject(ReportService);
+
+  authService = inject(AuthService);
+  reportService = inject(ReportService);
   @Output() loadMore = new EventEmitter<void>();
   @Output() delete = new EventEmitter<Gasto>(); // Alterado para emitir o objeto Gasto  @Output() update = new EventEmitter<Gasto>();
   @Output() generateReport = new EventEmitter<void>(); // Novo Output para o relatório
   @Output() update = new EventEmitter<Gasto>();
-   onDelete(gasto: Gasto): void { // Recebe o objeto Gasto
+  @Output() pageChange = new EventEmitter<number>(); 
+  onDelete(gasto: Gasto): void { // Recebe o objeto Gasto
     this.delete.emit(gasto);
   }
   onFilterChange(type: 'este_mes' | 'mes_passado'): void {
@@ -117,7 +123,7 @@ export class GastoListComponent {
       mes = oneMonthAgo.getMonth() + 1;
       ano = oneMonthAgo.getFullYear();
     }
-    
+
     // Emite o objeto com os filtros
     this.filterChange.emit({ mes, ano });
   }
@@ -131,12 +137,12 @@ export class GastoListComponent {
     this.generateReport.emit();
   }
 
-   Down(){
-         const currentDate = new Date();
-        const mes = currentDate.getMonth() + 1;
-        const ano = currentDate.getFullYear();
-        const usuarioId = this.authService.currentUser()?.id;
+  Down() {
+    const currentDate = new Date();
+    const mes = currentDate.getMonth() + 1;
+    const ano = currentDate.getFullYear();
+    const usuarioId = this.authService.currentUser()?.id;
 
-      this.reportService.downloadMonthlyReport({ mes, ano, usuarioId })
-    }
+    this.reportService.downloadMonthlyReport({ mes, ano, usuarioId })
+  }
 }
