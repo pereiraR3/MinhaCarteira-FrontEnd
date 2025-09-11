@@ -1,24 +1,38 @@
-<div [formGroup]="filterForm" class="p-4 bg-gray-50 rounded-lg shadow-sm mb-6 flex flex-wrap items-end gap-4">
-  
-  <div class="flex-grow">
+<form [formGroup]="filterForm" class="p-4 bg-gray-50 rounded-lg shadow-sm mb-6 flex flex-wrap items-end gap-4">
+
+  <div class="flex-grow min-w-[150px]">
     <label for="nome" class="block text-sm font-medium text-gray-700">Nome do Gasto</label>
     <input type="text" id="nome" formControlName="nome" placeholder="Ex: Almoço"
            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
   </div>
 
-  <div class="flex-grow">
+  <div class="flex-grow min-w-[150px]">
+    <label for="categoria" class="block text-sm font-medium text-gray-700">Categoria</label>
+    <select id="categoria" formControlName="categoriaId" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      <option [ngValue]="null">Todas as Categorias</option>
+      @for(categoria of categorias$ | async; track categoria.id) {
+        <option [value]="categoria.id">{{ categoria.nome }}</option>
+      }
+    </select>
+  </div>
+  
+
+  <div class="flex-grow min-w-[150px]">
     <label for="dataInicio" class="block text-sm font-medium text-gray-700">Data Início</label>
-    <input type="date" id="dataInicio" formControlName="dataInicio"
-           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    <input type="date" id="dataInicio" formControlName="dataInicio" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
   </div>
 
-  <div class="flex-grow">
+  <div class="flex-grow min-w-[150px]">
     <label for="dataFim" class="block text-sm font-medium text-gray-700">Data Fim</label>
-    <input type="date" id="dataFim" formControlName="dataFim"
-           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+    <input type="date" id="dataFim" formControlName="dataFim" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
   </div>
 
-  <button type="button" (click)="resetFilters()" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">
-    Limpar
-  </button>
-</div>
+  <div class="flex items-center space-x-2 pt-6">
+    <button type="button" (click)="applyFilters()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">
+      Filtrar
+    </button>
+    <button type="button" (click)="resetFilters()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md">
+      Limpar
+    </button>
+  </div>
+</form>

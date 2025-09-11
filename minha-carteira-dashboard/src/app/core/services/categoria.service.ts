@@ -1,8 +1,10 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { tap, catchError, of, Observable } from 'rxjs';
 import { Categoria, Page } from '../models';
 import { AuthService } from './auth.service';
+import { shareReplay } from 'rxjs/operators';
+import { expand, map, reduce  } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +12,7 @@ import { AuthService } from './auth.service';
 export class CategoriaService {
   private http = inject(HttpClient);
   private authService = inject(AuthService);
+  private readonly PAGE_SIZE = 20;
 
   openSelect = signal(false);
   categorias = signal<Categoria[]>([]);
@@ -31,16 +34,22 @@ export class CategoriaService {
 
     // Um segundo effect para reagir ao login/logout
     effect(() => {
-        if(this.authService.isAuthenticated()){
-            // Se quiser carregar as categorias logo após o login, pode chamar aqui
-            // this.loadInitialCategorias();
-        } else {
-            // Limpa o estado quando o usuário faz logout
-            this.resetState();
-        }
+      if (this.authService.isAuthenticated()) {
+        // Se quiser carregar as categorias logo após o login, pode chamar aqui
+        // this.loadInitialCategorias();
+      } else {
+        // Limpa o estado quando o usuário faz logout
+        this.resetState();
+      }
     })
   }
+  private fetchCategoriasByPage(page: number): Observable<Page<Categoria>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', this.PAGE_SIZE.toString());
 
+    return this.http.get<Page<Categoria>>(`/api/categoria/find-by-filter`, { params });
+  }
   /**
    * Carrega a lista inicial de categorias, se ainda não tiver sido carregada.
    */
@@ -65,6 +74,11 @@ export class CategoriaService {
     );
   }
 
+
+  public getCategorias(): Observable<Categoria[]> {
+    return this.categorias$;
+  }
+
   /**
    * Busca a próxima página de categorias.
    */
@@ -87,6 +101,27 @@ export class CategoriaService {
     this.openSelect.set(false);
   }
 
+
+  private categorias$ = this.fetchCategoriasByPage(0).pipe(
+    // 1. O operador 'expand' busca as páginas em sequência.
+    // Ele recebe a resposta da página anterior e decide se busca a próxima.
+    expand(response => {
+      const nextPage = response.number + 1;
+      if (nextPage < response.totalPages) {
+        return this.fetchCategoriasByPage(nextPage);
+      } else {
+        // Quando não há mais páginas, retorna EMPTY para parar a recursão.
+        return of();
+      }
+    }),
+    // 2. O operador 'map' extrai apenas o array 'content' de cada resposta de página.
+    map(response => response.content),
+    // 3. O operador 'reduce' acumula o 'content' de cada página em um único array.
+    reduce((acc, content) => [...acc, ...content], [] as Categoria[]),
+    // 4. shareReplay(1) armazena o array final e completo em cache.
+    shareReplay(1),
+    
+  );
   /**
    * Método central para buscar categorias da API de forma paginada.
    * @param page O número da página a ser buscada.

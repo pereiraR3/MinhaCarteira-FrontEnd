@@ -9,6 +9,7 @@ export interface FilterCriteria {
   nome?: string;
   dataInicio?: string;
   dataFim?: string;
+   categoriaId?: number;
 }
 @Injectable({
   providedIn: 'root'
@@ -76,7 +77,10 @@ export class GastoService {
     if (currentFilters.nome) params = params.append('nome', currentFilters.nome);
     if (currentFilters.dataInicio) params = params.append('dataInicio', currentFilters.dataInicio);
     if (currentFilters.dataFim) params = params.append('dataFim', currentFilters.dataFim);
-
+    if (currentFilters.categoriaId) {
+       
+        params = params.append('categoriaId', currentFilters.categoriaId.toString());
+      }
     this.http.get<Page<Gasto>>('/api/gasto/find-by-filter', { params })
       .pipe(
         tap(response => {
