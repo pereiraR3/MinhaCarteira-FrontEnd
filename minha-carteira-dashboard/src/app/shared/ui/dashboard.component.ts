@@ -9,7 +9,7 @@ import { GastoListComponent } from './gasto-list/gasto-list.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalComponent } from '../modal/modal.component';
 import { GastoFilterComponent } from "../../features/gasto/gasto-filter.component";
-
+import { RouterModule } from '@angular/router';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -21,6 +21,9 @@ import { GastoFilterComponent } from "../../features/gasto/gasto-filter.componen
                 <h1 class="text-3xl font-bold text-gray-800">Controle de gasto</h1>
                 <p class="text-gray-600">Bem-vindo, {{ authService.currentUser()?.nome }}!</p>
             </div>
+             <button routerLink="/charts" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">
+            Ver Gráficos
+          </button>
             <button (click)="authService.logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">
                 Sair
             </button>

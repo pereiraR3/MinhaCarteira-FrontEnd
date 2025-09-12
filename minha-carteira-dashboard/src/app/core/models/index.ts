@@ -29,3 +29,19 @@ export interface Categoria {
   icone: string;
   cor: string;
 }
+export interface VWGastosMensaisPorCategoriaResponseDTO {
+  usuarioId: number;
+  usuarioNome: string;
+  categoria: string;
+  ano: number;
+  mes: number;
+  totalGasto: number;
+}
+
+export interface PageVWGastosMensaisPorCategoriaResponseDTO {
+  content: VWGastosMensaisPorCategoriaResponseDTO[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}

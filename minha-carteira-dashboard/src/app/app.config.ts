@@ -7,11 +7,13 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { apiUrlInterceptor } from './core/auth/api-url.interceptor';
 import { reportUrlInterceptor } from './core/auth/api-url-report.interceptor';
+import { provideAnimations } from '@angular/platform-browser/animations'; // 1. IMPORTE AQUI
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
+     provideAnimations(),
     provideRouter(routes), provideClientHydration(withEventReplay()),
     provideHttpClient(),
      provideHttpClient(

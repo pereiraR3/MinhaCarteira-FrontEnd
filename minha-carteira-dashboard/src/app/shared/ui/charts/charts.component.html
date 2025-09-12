@@ -1,0 +1,14 @@
+<div style="height: 500px;">
+  <ngx-charts-bar-vertical
+    [view]="[700, 400]"
+    [results]="chartData"
+    [xAxis]="true"
+    [yAxis]="true"
+    [legend]="true"
+    [showXAxisLabel]="true"
+    [showYAxisLabel]="true"
+    xAxisLabel="Mês"
+    yAxisLabel="Total Gasto"
+    (select)="onSelect($event)">
+  </ngx-charts-bar-vertical>
+</div>
