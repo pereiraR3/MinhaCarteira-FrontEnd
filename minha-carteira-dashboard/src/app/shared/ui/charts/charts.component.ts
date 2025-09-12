@@ -20,6 +20,7 @@ export class ChartsComponent implements OnInit {
   constructor(private apiService: ApiService) { }
 
   ngOnInit(): void {
+    console.log("ChartsComponent initialized");
     // Exemplo de chamada. Adapte os filtros conforme sua necessidade.
     this.apiService.getGastosMensais(undefined, 2024).subscribe(data => {
       this.chartData = this.transformDataForChart(data.content);

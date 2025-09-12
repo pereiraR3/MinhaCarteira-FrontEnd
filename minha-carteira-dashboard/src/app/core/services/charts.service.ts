@@ -19,6 +19,7 @@ export class ApiService {
     mes?: number,
     usuarioId?: number
   ): Observable<PageVWGastosMensaisPorCategoriaResponseDTO> {
+    console.log('Chamando getGastosMensais com:', { categoria, ano, mes, usuarioId });
     let params = new HttpParams();
     if (categoria) {
       params = params.append('categoria', categoria);
