@@ -29,7 +29,7 @@ export class AuthService {
     const body = { email, senha: password };
     this.http.post<any>(`/api/auth/authenticate`, body).subscribe({
       next: (response) => {
-        const token = response.accessToken;
+        const token = response.access_token;
         if (!token) {
           this.apiError.set('Token não recebido da API.');
           return;
@@ -39,7 +39,7 @@ export class AuthService {
         if (decoded?.sub) {
           console.log('Navegando para /dashboard após login bem-sucedido');
           this.router.navigate(['/dashboard']);
-          this.fetchUserDetails(decoded.sub);
+          this.fetchUserDetails(email);
         } else {
           this.apiError.set('Token JWT inválido.');
         }

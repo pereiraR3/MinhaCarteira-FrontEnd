@@ -9,52 +9,99 @@ import { GastoListComponent } from './gasto-list/gasto-list.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ModalComponent } from '../modal/modal.component';
 import { GastoFilterComponent } from "../../features/gasto/gasto-filter.component";
-import { Router, RouterModule } from '@angular/router';
-import { ChartsComponent } from "./charts/charts.component";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule], // Apenas o necessário para a moldura
+  imports: [CommonModule, GastoListComponent, GastoFormComponent, ModalComponent, GastoFilterComponent], // Adicione ModalComponent
   template: `
     <main class="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      <header class="flex justify-between items-center mb-8">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-800">Controle de gasto</h1>
-          <p class="text-gray-600">Bem-vindo, {{ authService.currentUser()?.nome }}!</p>
-        </div>
-        <div class="flex items-center space-x-4">
-          <button routerLink="charts" class="bg-blue-500 hover:bg-blue-600 ...">
-            Ver Gráficos
-          </button>
-          <button (click)="authService.logout()" class="bg-red-500 hover:bg-red-600 ...">
-            Sair
-          </button>
-        </div>
-      </header>
-      
-      <router-outlet></router-outlet>
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Controle de gasto</h1>
+                <p class="text-gray-600">Bem-vindo, {{ authService.currentUser()?.nome }}!</p>
+            </div>
+            <button (click)="authService.logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">
+                Sair
+            </button>
 
+
+        </header>
+        <div class="max-w-7xl mx-auto">
+            @if(reportService.isLoading() || gastoService.isLoading()){
+              <div class="mb-4 p-4 bg-blue-100 text-blue-800 rounded-lg animate-pulse">Processando...</div>
+            }
+
+            @if(reportService.apiError() || gastoService.apiError()){
+              <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">
+                {{ reportService.apiError() || gastoService.apiError() }}
+              </div>
+            }
+
+            <app-gasto-form
+              [categorias]="categoriaService.categorias()"
+              [isLoadingCategorias]="categoriaService.isLoading()"
+              (save)="onAddGasto($event)"
+            ></app-gasto-form>
+
+      <app-gasto-filter (filterChange)="onApplyFilters($event)"></app-gasto-filter>
+
+        <app-gasto-list
+        [gastos]="gastoService.gastos()"
+        [isLoading]="gastoService.isLoading()"
+        
+        [currentPage]="gastoService.currentPage()"
+        [totalPages]="gastoService.totalPages()"
+
+        (pageChange)="onPageChange($event)"
+
+        (delete)="openDeleteModal($event)"
+        (update)="openEditModal($event)"
+        (generateReport)="onGenerateReport()"
+      ></app-gasto-list>
+
+        </div>
     </main>
-  `,
+
+    <app-modal [isOpen]="!!gastoToEdit()" title="Editar Gasto" (closeModal)="closeModals()">
+      <app-gasto-form
+        [categorias]="categoriaService.categorias()"
+        [isLoadingCategorias]="categoriaService.isLoading()"
+        [gastoToEdit]="gastoToEdit()"
+
+        (save)="onUpdateGasto($event)"
+        (cancel)="closeModals()"
+      ></app-gasto-form>
+    </app-modal>
+
+    <app-modal [isOpen]="!!gastoToDelete()" title="Confirmar Exclusão" (closeModal)="closeModals()">
+      @if(gastoToDelete(); as gasto) {
+        <p class="mb-6">Você tem certeza que deseja excluir o gasto "{{ gasto.nome }}"?</p>
+        <div class="flex justify-end space-x-4">
+          <button (click)="closeModals()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg">
+            Cancelar
+          </button>
+          <button (click)="onDeleteGasto(gasto.id)" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">
+            Sim, Excluir
+          </button>
+        </div>
+      }
+    </app-modal>
+
+    `,
 })
 export class DashboardComponent {
   authService = inject(AuthService);
   gastoService = inject(GastoService);
   reportService = inject(ReportService);
   categoriaService = inject(CategoriaService);
-  router = inject(Router); 
   activeFilter = signal<'este_mes' | 'mes_passado'>('este_mes');
   currentPage = signal(0);
   // Signals para controlar o estado dos modais
   gastoToEdit = signal<Gasto | null>(null);
   gastoToDelete = signal<Gasto | null>(null);
 
-
-  verGraficos(){
-    console.log("Navegando para gráficos");
-    this.router.navigate(['/charts']);
-  }
+  // --- Métodos para controlar os Modais ---
   openEditModal(gasto: Gasto): void {
     this.gastoToEdit.set(gasto);
   }
